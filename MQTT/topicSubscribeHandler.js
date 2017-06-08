@@ -23,30 +23,30 @@ client.on('connect', function () {
     });
 });
 
-client.on('message', function (topic, message) {
-    //Once i received a notification from publisher that a message was published , I have to sent
-    //to the main server that a value was updated and he has to send a notification to all the client
-    //that subscribed at that topic
-    // The DB is updated after the message was publish successfully
-    console.log("[Message Published]", topic, message.toString());
-    const options = {
-        method: 'POST',
-        uri: URL_TOPIC_PUBLISHED,
-        body: {
-            topic: topic,
-            message: message.toString()
-        },
-        json: true
-    };
+// client.on('message', function (topic, message) {
+//     //Once i received a notification from publisher that a message was published , I have to sent
+//     //to the main server that a value was updated and he has to send a notification to all the client
+//     //that subscribed at that topic
+//     // The DB is updated after the message was publish successfully
+//     console.log("[Message Published]", topic, message.toString());
+//     const options = {
+//         method: 'POST',
+//         uri: URL_TOPIC_PUBLISHED,
+//         body: {
+//             topic: topic,
+//             message: message.toString()
+//         },
+//         json: true
+//     };
 
-    // request(options)
-    //     .then(function (parsedBody) {
-    //         console.log("Modify was sent successfully and the users were notified");
-    //     })
-    //     .catch(function (err) {
-    //         console.log(err);
-    //     });
-});
+//     // request(options)
+//     //     .then(function (parsedBody) {
+//     //         console.log("Modify was sent successfully and the users were notified");
+//     //     })
+//     //     .catch(function (err) {
+//     //         console.log(err);
+//     //     });
+// });
 
 const aux = (event, context, callback) => {
     console.log("A thing modified value");
