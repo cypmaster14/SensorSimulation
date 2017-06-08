@@ -1,0 +1,24 @@
+{
+  "name": "senson_simulation",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "aws-iot-device-sdk": "^1.0.14",
+    "bcrypt": "^1.0.2",
+    "body-parser": "^1.17.1",
+    "express": "^4.15.2",
+    "express-cluster": "0.0.4",
+    "mongo-sanitize": "^1.0.0",
+    "mongoose": "^4.9.2",
+    "morgan": "^1.8.1",
+    "mqtt": "^2.6.1",
+    "request": "^2.81.0",
+    "request-promise": "^4.2.0"
+  }
+}

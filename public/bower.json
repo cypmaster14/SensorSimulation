@@ -1,0 +1,28 @@
+{
+  "name": "public",
+  "authors": [
+    "cypmaster14 <lila.lazar@info.uaic.ro>"
+  ],
+  "description": "",
+  "main": "",
+  "license": "MIT",
+  "homepage": "",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular-route": "^1.6.3",
+    "material-design-icons": "^3.0.1",
+    "angular-materialize": "^0.2.2",
+    "materialize": "^0.98.0",
+    "angular-gridster": "^0.13.15",
+    "firebase": "^3.8.0"
+  },
+  "resolutions": {
+    "materialize": "^0.98.0"
+  }
+}

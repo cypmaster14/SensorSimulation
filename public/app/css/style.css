@@ -1,0 +1,40 @@
+.thing {
+    background: #dee1e5;
+    margin-right: 20px;
+    margin-bottom: 10px;
+    height: 280px;
+}
+
+.thing > p {
+    font-size: 20px;
+}
+
+.row .col.l4 {
+    width: 33.33333%;
+}
+
+.row .col.l1, .row .col.l10, .row .col.l11, .row .col.l12, .row .col.l2, .row .col.l3, .row .col.l4, .row .col.l5, .row .col.l7, .row .col.l8, .row .col.l9 {
+    margin-left: auto;
+    left: auto;
+    right: auto;
+}
+
+.sortable .card > .title, .sortable-ghost {
+    cursor: -moz-grab;
+    cursor: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAQAAADZc7J/AAAABGdBT…h0ZGF0ZTptb2RpZnkAMjAxNC0wNy0wN1QxMzo0OToxMCswMjowMOroGqgAAAAASUVORK5CYII=), move;
+}
+
+.card .title {
+    width: 100%;
+    padding: 10px 2rem;
+    border-radius: 2px 2px 0 0;
+}
+
+.card .title .close, .card .title .minimize {
+    float: right;
+    width: 20px;
+    text-align: center;
+    color: inherit;
+    transition: transform .3s ease-in-out;
+}
+

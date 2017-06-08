@@ -1,0 +1,22 @@
+<div class="container">
+    <div class="modal-content">
+        <h3>Enter your email</h3>
+        <div class="row">
+            <form class="col s6 m6">
+                <div class="row modal-form-row">
+                    <div class="input-field col s12">
+                        <input type="email" id="email" class="validate" ng-model="email" required aria-required="true">
+                        <label for="email">Email</label>
+                    </div>
+                </div>
+                <p ng-show="showWarning">Enter an email</p>
+
+            </form>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button class="waves-effect waves-green btn" ng-click="enterUsername(email)">Go
+    </button>
+
+    </div>
+</div>
