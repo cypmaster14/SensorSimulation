@@ -1,27 +1,9 @@
 'use strict';
-const User = require("../Models/User");
 const request = require('request-promise');
 const URL_TOPIC_PUBLISHED = "http://localhost:1414/SS/things";
 const client = require("./connector");
 
-client.on('connect', function () {
-    console.log("Connected to AWS IOT");
-    //Know I have to retrieve all the topics from DB and subscribe to each topic
-    User.find({}, {
-        'things.topic': 1,
-        '_id': 0
-    }, function (err, res) {
-        for (let document of res) {
-            // console.log(document.things);
-            if (document.things.length > 0) {
-                for (let result of document.things) {
-                    console.log(`Subscribe to:${result.topic}`);
-                    client.subscribe(result.topic);
-                }
-            }
-        }
-    });
-});
+
 
 // client.on('message', function (topic, message) {
 //     //Once i received a notification from publisher that a message was published , I have to sent

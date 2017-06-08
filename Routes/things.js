@@ -5,7 +5,7 @@ const User = require('../Models/User');
 const sanitize = require('mongo-sanitize');
 const connection = require("../Connection/connection");
 const publisher = require('../MQTT/publisher');
-const clientSubscriber = require("../MQTT/topicSubscribeHandler");
+const clientSubscriber = require("../MQTT/connector");
 
 router.get("/", function (req, res, next) {
 
@@ -58,26 +58,16 @@ router.use(function (req, res, next) {
     }
 
     console.log("Query strings contains topic:", topic);
-    User.aggregate([{
-            $match: {
-                'things.topic': topic
-            }
-        },
-        {
-            $project: {
-                things: {
-                    $filter: {
-                        input: '$things',
-                        as: 'thing',
-                        cond: {
-                            $eq: ['$$thing.topic', topic]
-                        }
-                    }
-                },
-                _id: 0
+    User.find({
+        "things.topic": topic
+    }, {
+        _id: 0,
+        things: {
+            $elemMatch: {
+                topic: topic
             }
         }
-    ], function (err, document) {
+    }, function (err, document) {
         if (err) {
             console.log(err);
             console.log(`Failed to extract the info about topic:${topic} from DB`);
@@ -85,8 +75,7 @@ router.use(function (req, res, next) {
             next();
             return;
         }
-
-        if (document.length === 0) {
+        if (document === null) {
             res.locals.statusCode = 404;
             res.locals.message = "Topic doesn't exists";
             next();
@@ -95,7 +84,6 @@ router.use(function (req, res, next) {
 
         res.locals.statusCode = 200;
         res.locals.success = true;
-        delete document[0].things[0]['_id'];
         console.log("Data:", document[0].things[0]);
         res.locals.message = document[0].things[0];
         next();
@@ -161,7 +149,7 @@ router.put("/", function (req, res, next) {
         });
     } else {
         console.log("Actualizez datele si push notification");
-        publisher.publishMessage(topic, value, function (err) {
+        publisher.publishMessageToIoT(topic, value, function (err) {
             if (err) {
                 console.log(err);
                 res.locals.message = "Failed to publish the data";
@@ -187,9 +175,12 @@ router.put("/", function (req, res, next) {
 });
 
 router.patch("/", function (req, res, next) {
-    console.log("In patch");
     console.log("[Things Patch]", req.body);
-    res.end("OK");
+    const topic=req.body.topic;
+    const message=req.body.message;
+    publisher.publishMessage(topic,message,err=>{
+        res.end("OK");
+    });
 });
 
 function updateTopicValue(topic, value, next) {
