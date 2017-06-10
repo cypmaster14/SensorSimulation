@@ -243,15 +243,19 @@ function mainController($scope, indexServices) {
 
 
             console.log("New Thing", newThing);
-            $("#modalThing").modal('close');
             indexServices.addThing(newThing, function (err, response) {
+                $("#modalThing").modal('close');
                 if (err) {
                     console.log("Some error occurred");
                     console.log(err);
+                    if(err.status === 400 || err.status===409){
+                        Materialize.toast(err.data.message, 3000, 'rounded');
+                    }
                     return;
                 }
                 console.log('[Next]', response);
                 $scope.devices.push(newThing);
+                Materialize.toast("Thing was added", 3000, 'rounded');
             });
         }
 

@@ -6,6 +6,8 @@ const sanitize = require('mongo-sanitize');
 const connection = require("../Connection/connection");
 const publisher = require('../MQTT/publisher');
 const clientSubscriber = require("../MQTT/connector");
+const outputTypeSupported=['Boolean','Number','String','Percentage'];
+const async= require("async");
 
 router.get("/", function (req, res, next) {
 
@@ -97,34 +99,100 @@ router.post('/', function (req, res, next) {
     res.locals.success = false;
     res.locals.statusCode = 500;
 
+    const validation = validateNewThingInput(newThing);
+    if (!validation.isValid) {
+        res.locals.statusCode = 400;
+        res.locals.message = validation.message;
+        next();
+        return;
+    }
+
     console.log("New thing", newThing);
 
-    User.findByIdAndUpdate(email, {
-            $push: {
-                'things': newThing
-            }
-        }, {
-            safe: true,
-            upsert: true
-        },
-        function (err, document) {
-            if (err) {
-                console.log(err);
-                res.locals.message = "Failed to add the thing to the user's list of things";
-                next();
-                return;
-            }
+    async.series([
+        function (taskCallback) {
+            User.find({
+                "things.topic": newThing.topic
 
-            clientSubscriber.subscribe(newThing.topic);
-            console.log("New subscription:", newThing.topic);
-            console.log(`[${email}]Thing with the topic ${newThing.topic} was added`);
-            res.locals.statusCode = 201;
-            res.locals.success = true;
-            res.locals.message = "Thing was added";
-            next();
+            }, {
+                things: {
+                    $elemMatch: {
+                        topic: newThing.topic
+                    }
+                }
+            }, function (err, documents) {
+                if (err) {
+                    console.log("Failed to check if already exists thing with topic:", newThing.topic);
+                    res.locals.message = "Some error occured";
+                    taskCallback(err);
+                    return;
+                }
+                console.log(documents);
+                if (documents.length===0) {
+                    //Topic-ul nu este folosit
+                    taskCallback(null);
+                } else {
+                    console.log("Topic-ul este deja folosit");
+                    res.locals.statusCode = 409;
+                    res.locals.message = "Topic is already used";
+                    taskCallback(new Error("Topic is already used"));
+                }
+            });
+        },
+        function (taskCallback) {
+            User.findByIdAndUpdate(email, {
+                    $push: {
+                        'things': newThing
+                    }
+                }, {
+                    safe: true,
+                    upsert: true
+                },
+                function (err, document) {
+                    if (err) {
+                        console.log(err);
+                        res.locals.message = "Failed to add the thing to the user's list of things";
+                        taskCallback(err);
+                        return;
+                    }
+                    taskCallback(null);
+                });
         }
-    );
+    ], function (err, results) {
+        if (err) {
+            console.log(err);
+            next();
+            return;
+        }
+        clientSubscriber.subscribe(newThing.topic);
+        console.log("New subscription:", newThing.topic);
+        console.log(`[${email}]Thing with the topic ${newThing.topic} was added`);
+        res.locals.statusCode = 201;
+        res.locals.success = true;
+        res.locals.message = "Thing was added";
+        next();
+    });
 });
+
+function validateNewThingInput(newThing){
+    if(outputTypeSupported.indexOf(newThing.outputType)==-1){
+        return {
+            isValid:false,
+            message:"Output type not supported"
+        };
+    }
+    if(newThing.outputType==='Number' || newThing.outputType==='Percentage'){
+        if(!(newThing.minimumValue<=newThing.value && newThing.value<=newThing.maximamValue)){
+            return {
+                isValid:false,
+                message:"The values of the thing are not good"
+            };
+        }
+    }
+    return {
+        isValid:true
+    };
+}
 
 router.put("/", function (req, res, next) {
     const topic = req.body.topic;
