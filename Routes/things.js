@@ -8,7 +8,9 @@ const publisher = require('../MQTT/publisher');
 const clientSubscriber = require("../MQTT/connector");
 const outputTypeSupported=['Boolean','Number','String','Percentage'];
 const async= require("async");
+const cors= require("cors");
 
+router.use(cors());
 router.get("/", function (req, res, next) {
 
     res.locals.success = false;
