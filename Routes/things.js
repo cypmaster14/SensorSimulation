@@ -6,8 +6,8 @@ const sanitize = require('mongo-sanitize');
 const connection = require("../Connection/connection");
 const publisher = require('../MQTT/publisher');
 const clientSubscriber = require("../MQTT/connector");
-const outputTypeSupported=['Boolean','Number','String','Percentage'];
-const async= require("async");
+const outputTypeSupported = ['Boolean', 'Number', 'String', 'Percentage'];
+const async = require("async");
 
 
 /**
@@ -28,7 +28,7 @@ router.get("/", function (req, res, next) {
     User.findById(email, {
         things: 1,
         _id: 0
-    }, function (err, document) {
+    }, function(err, document) {
         if (err) {
             res.locals.message = "Failed to retrieve user's things";
             console.log(err);
@@ -43,7 +43,7 @@ router.get("/", function (req, res, next) {
     });
 });
 
-router.use(function (req, res, next) {
+router.use(function(req, res, next) {
     if (req.method !== "GET") {
         next();
         return;
@@ -73,7 +73,7 @@ router.use(function (req, res, next) {
                 topic: topic
             }
         }
-    }, function (err, document) {
+    }, function(err, document) {
         if (err) {
             console.log(err);
             console.log(`Failed to extract the info about topic:${topic} from DB`);
@@ -81,7 +81,7 @@ router.use(function (req, res, next) {
             next();
             return;
         }
-        if (document === null) {
+        if (document === null || document.length === 0) {
             res.locals.statusCode = 404;
             res.locals.message = "Topic doesn't exists";
             next();
@@ -129,7 +129,7 @@ router.post('/', function (req, res, next) {
                         topic: newThing.topic
                     }
                 }
-            }, function (err, documents) {
+            }, function(err, documents) {
                 if (err) {
                     console.log("Failed to check if already exists thing with topic:", newThing.topic);
                     res.locals.message = "Some error occured";
@@ -137,10 +137,11 @@ router.post('/', function (req, res, next) {
                     return;
                 }
                 console.log(documents);
-                if (documents.length===0) {
+                if (documents.length === 0) {
                     //Topic-ul nu este folosit
                     taskCallback(null);
-                } else {
+                }
+                else {
                     console.log("Topic-ul este deja folosit");
                     res.locals.statusCode = 409;
                     res.locals.message = "Topic is already used";
@@ -158,7 +159,7 @@ router.post('/', function (req, res, next) {
                     safe: true,
                     upsert: true
                 },
-                function (err, document) {
+                function(err, document) {
                     if (err) {
                         console.log(err);
                         res.locals.message = "Failed to add the thing to the user's list of things";
@@ -168,7 +169,7 @@ router.post('/', function (req, res, next) {
                     taskCallback(null);
                 });
         }
-    ], function (err, results) {
+    ], function(err, results) {
         if (err) {
             console.log(err);
             next();
@@ -197,7 +198,7 @@ router.put("/", function (req, res, next) {
 
     if (req.body.publishData !== undefined) {
         console.log("Doar actualizez datele");
-        updateTopicValue(topic, value, function (err) {
+        updateTopicValue(topic, value, function(err) {
             if (err) {
                 console.log(err);
                 res.locals.message = "Failed to update the value from DB";
@@ -209,9 +210,10 @@ router.put("/", function (req, res, next) {
             res.locals.success = true;
             next();
         });
-    } else {
+    }
+    else {
         console.log("Actualizez datele si push notification");
-        publisher.publishMessageToIoT(topic, value, function (err) {
+        publisher.publishMessageToGateway(topic, value, function(err) {
             if (err) {
                 console.log(err);
                 res.locals.message = "Failed to publish the data";
@@ -220,7 +222,7 @@ router.put("/", function (req, res, next) {
             }
             console.log("Data was published");
 
-            updateTopicValue(topic, value, function (err) {
+            updateTopicValue(topic, value, function(err) {
                 if (err) {
                     console.log(err);
                     res.locals.message = "Failed to update the value from DB";
@@ -241,10 +243,13 @@ router.put("/", function (req, res, next) {
  */
 router.patch("/", function (req, res, next) {
     console.log("[Things Patch]", req.body);
-    const topic=req.body.topic;
-    const message=req.body.message;
-    publisher.publishMessage(topic,message,err=>{
-        res.end("OK");
+    const topic = req.body.topic;
+    const newValue = req.body.value;
+    publisher.publishMessageToDevice(topic, newValue, err => {
+        res.locals.statusCode = 200;
+        res.locals.success = true;
+        res.locals.message = "Message was sent to device";
+        next();
     });
 });
 

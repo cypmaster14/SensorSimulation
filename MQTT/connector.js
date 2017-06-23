@@ -2,15 +2,24 @@
 const awsIOT = require('aws-iot-device-sdk');
 const User = require("../Models/User");
 const credentials = require("./config");
+const receiver = require("./receiver");
+const TOPIC_THING_MODIFY_VALUE = "thingModifyValue";
+
 
 const client = awsIOT.device(credentials);
-client.on('connect', function () {
+client.on('connect', function() {
     console.log("Connected to AWS IOT");
+    client.subscribe(TOPIC_THING_MODIFY_VALUE);
+    console.log(`Subscribe to:${TOPIC_THING_MODIFY_VALUE}`);
     //Know I have to retrieve all the topics from DB and subscribe to each topic
     User.find({}, {
         'things.topic': 1,
         '_id': 0
-    }, function (err, res) {
+    }, function(err, res) {
+        if (err) {
+            console.log("[FAILED] Failed to retrive the list of MQTT topict to connect to");
+            return;
+        }
         for (let document of res) {
             // console.log(document.things);
             if (document.things.length > 0) {
@@ -23,38 +32,6 @@ client.on('connect', function () {
     });
 });
 
-/**
- * This function is executed when a MQTT message is received
- */
-client.on('message', function (topic, message) {
-    message=message.toString();
-    console.log("[RECEIVER] Message received:",topic,message);
-    updateTopicValue(topic, message, function (err) {
-        if (err) {
-            console.log("Failed to update the value of topic");
-            console.log(err);
-            return;
-        }
-        console.log("Thing was updated");
-    });
-});
-
-function updateTopicValue(topic, value, next) {
-    User.update({
-        'things.topic': topic
-    }, {
-        $set: {
-            'things.$.value': value
-        }
-    }, {
-        multi: true
-    }, function (err, document) {
-        if (err) {
-            next(err);
-        } else {
-            next(null);
-        }
-    });
-}
+client.on('message', receiver);
 
 module.exports = client;

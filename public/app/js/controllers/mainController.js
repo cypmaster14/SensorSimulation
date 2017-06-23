@@ -31,74 +31,74 @@ function mainController($scope, indexServices) {
     $scope.otherOptions = [];
     $scope.devices = [];
 
-    $scope.testDevices = [
-        {
-            col: 0,
-            row: 0,
-            sizeY: 2,
-            sizeX: 1,
-            topic: 'topic1',
-            name: 'name1',
-            outputType: 'Boolean',
-            thingType: ['Read', 'Write'],
-            value: true
-        },
-        {
-            col: 1,
-            row: 0,
-            sizeY: 1,
-            sizeX: 1,
-            topic: 'topic2',
-            name: 'name2',
-            outputType: 'Number',
-            min: 0,
-            max: 100,
-            thingType: ['Read'],
-            value: 40
-        },
-        {
-            col: 1,
-            row: 1,
-            sizeY: 1,
-            sizeX: 2,
-            topic: 'topic3',
-            name: 'name2',
-            outputType: 'String',
-            thingType: ['Read', 'Write'],
-            value: 'Open'
-        }
-    ];
+    // $scope.testDevices = [
+    //     {
+    //         col: 0,
+    //         row: 0,
+    //         sizeY: 2,
+    //         sizeX: 1,
+    //         topic: 'topic1',
+    //         name: 'name1',
+    //         outputType: 'Boolean',
+    //         thingType: ['Read', 'Write'],
+    //         value: true
+    //     },
+    //     {
+    //         col: 1,
+    //         row: 0,
+    //         sizeY: 1,
+    //         sizeX: 1,
+    //         topic: 'topic2',
+    //         name: 'name2',
+    //         outputType: 'Number',
+    //         min: 0,
+    //         max: 100,
+    //         thingType: ['Read'],
+    //         value: 40
+    //     },
+    //     {
+    //         col: 1,
+    //         row: 1,
+    //         sizeY: 1,
+    //         sizeX: 2,
+    //         topic: 'topic3',
+    //         name: 'name2',
+    //         outputType: 'String',
+    //         thingType: ['Read', 'Write'],
+    //         value: 'Open'
+    //     }
+    // ];
 
-    $scope.gridsterOpts = {
-        minRows: 2, // the minimum height of the grid, in rows
-        maxRows: 100,
-        columns: 6, // the width of the grid, in columns
-        width: 'auto',
-        colWidth: 'auto', // can be an integer or 'auto'.  'auto' uses the pixel width of the element divided by 'columns'
-        rowHeight: 'match', // can be an integer or 'match'.  Match uses the colWidth, giving you square widgets.
-        margins: [20, 20], // the pixel distance between each widget
-        // defaultSizeX: 2, // the default width of a gridster item, if not specifed
-        // defaultSizeY: 2, // the default height of a gridster item, if not specified
-        mobileBreakPoint: 600, // if the screen is not wider that this, remove the grid layout and stack the items
-        resizable: {
-            enabled: true,
-            start: function (event, uiWidget, $element) {
-            }, // optional callback fired when resize is started,
-            resize: function (event, uiWidget, $element) {
-            }, // optional callback fired when item is resized,
-            stop: function (event, uiWidget, $element) {
-            } // optional callback fired when item is finished resizing
-        },
-        draggable: {
-            enabled: false, // whether dragging items is supported
-            start: function (event, uiWidget, $element) {
-            }, // optional callback fired when drag is started,
-            drag: function (event, uiWidget, $element) {
-            }, // optional callback fired when item is moved,
-            stop: function (event, uiWidget, $element) {
-            } // optional callback fired when item is finished dragging
-        }
-    };
+    // $scope.gridsterOpts = {
+    //     minRows: 2, // the minimum height of the grid, in rows
+    //     maxRows: 100,
+    //     columns: 6, // the width of the grid, in columns
+    //     width: 'auto',
+    //     colWidth: 'auto', // can be an integer or 'auto'.  'auto' uses the pixel width of the element divided by 'columns'
+    //     rowHeight: 'match', // can be an integer or 'match'.  Match uses the colWidth, giving you square widgets.
+    //     margins: [20, 20], // the pixel distance between each widget
+    //     // defaultSizeX: 2, // the default width of a gridster item, if not specifed
+    //     // defaultSizeY: 2, // the default height of a gridster item, if not specified
+    //     mobileBreakPoint: 600, // if the screen is not wider that this, remove the grid layout and stack the items
+    //     resizable: {
+    //         enabled: true,
+    //         start: function (event, uiWidget, $element) {
+    //         }, // optional callback fired when resize is started,
+    //         resize: function (event, uiWidget, $element) {
+    //         }, // optional callback fired when item is resized,
+    //         stop: function (event, uiWidget, $element) {
+    //         } // optional callback fired when item is finished resizing
+    //     },
+    //     draggable: {
+    //         enabled: false, // whether dragging items is supported
+    //         start: function (event, uiWidget, $element) {
+    //         }, // optional callback fired when drag is started,
+    //         drag: function (event, uiWidget, $element) {
+    //         }, // optional callback fired when item is moved,
+    //         stop: function (event, uiWidget, $element) {
+    //         } // optional callback fired when item is finished dragging
+    //     }
+    // };
 
     $scope.gridClicked = function (device) {
         console.log(device.topic);
