@@ -9,8 +9,12 @@ const clientSubscriber = require("../MQTT/connector");
 const outputTypeSupported=['Boolean','Number','String','Percentage'];
 const async= require("async");
 
-router.get("/", function (req, res, next) {
 
+/**
+ * GET /things
+ * Function that retrieves all the things that are registered at a specific email
+ */
+router.get("/", function (req, res, next) {
     res.locals.success = false;
     res.locals.statusCode = 500;
     const email = req.query.email;
@@ -92,6 +96,10 @@ router.use(function (req, res, next) {
     });
 });
 
+/**
+ *  POST /things
+ * Function that is used to add a thing to the system
+ */
 router.post('/', function (req, res, next) {
     const newThing = sanitizeData(req.body);
     const email = newThing.userName;
@@ -111,6 +119,7 @@ router.post('/', function (req, res, next) {
 
     async.series([
         function (taskCallback) {
+            //Check if the new thing's topic is already used
             User.find({
                 "things.topic": newThing.topic
 
@@ -140,6 +149,7 @@ router.post('/', function (req, res, next) {
             });
         },
         function (taskCallback) {
+            //Add the new thing to the user's list of things
             User.findByIdAndUpdate(email, {
                     $push: {
                         'things': newThing
@@ -174,26 +184,10 @@ router.post('/', function (req, res, next) {
     });
 });
 
-function validateNewThingInput(newThing){
-    if(outputTypeSupported.indexOf(newThing.outputType)==-1){
-        return {
-            isValid:false,
-            message:"Output type not supported"
-        };
-    }
-    if(newThing.outputType==='Number' || newThing.outputType==='Percentage'){
-        if(!(newThing.minimumValue<=newThing.value && newThing.value<=newThing.maximamValue)){
-            return {
-                isValid:false,
-                message:"The values of the thing are not good"
-            };
-        }
-    }
-    return {
-        isValid:true
-    };
-}
-
+/**
+ *  PUT /things
+ *  Function that is used to update the value of a thing(topic)
+ */
 router.put("/", function (req, res, next) {
     const topic = req.body.topic;
     const value = String(req.body.message);
@@ -242,6 +236,9 @@ router.put("/", function (req, res, next) {
     }
 });
 
+/**
+ * Function that is used to 
+ */
 router.patch("/", function (req, res, next) {
     console.log("[Things Patch]", req.body);
     const topic=req.body.topic;
@@ -251,6 +248,68 @@ router.patch("/", function (req, res, next) {
     });
 });
 
+
+/**
+ * Function that is used to send the response to client
+ */
+router.use(function (req, res) {
+    res.writeHead(res.locals.statusCode, {
+        'Content-Type': 'application/json'
+    });
+
+    const payload = {
+        success: res.locals.success,
+        message: res.locals.message
+    };
+    res.end(JSON.stringify(payload));
+});
+
+/**
+ * Function that is used to sanitize the date received from clients
+ * @param {JSON} data 
+ */
+function sanitizeData(data) {
+    const sanitizeData = {};
+    for (let property of Object.keys(data)) {
+        if (data.hasOwnProperty(property)) {
+            sanitizeData[property] = sanitize(data[property]);
+        }
+    }
+    return sanitizeData;
+}
+
+
+/**
+ * Function that validates the information regarding a new thing
+ * @param {Object} newThing 
+ */
+function validateNewThingInput(newThing){
+    if(outputTypeSupported.indexOf(newThing.outputType)==-1){
+        return {
+            isValid:false,
+            message:"Output type not supported"
+        };
+    }
+    if(newThing.outputType==='Number' || newThing.outputType==='Percentage'){
+        if(!(newThing.minimumValue<=newThing.value && newThing.value<=newThing.maximamValue)){
+            return {
+                isValid:false,
+                message:"The values of the thing are not good"
+            };
+        }
+    }
+    return {
+        isValid:true
+    };
+}
+
+/**
+ * Function that is used to update the value of a thing
+ * I update the thing's value from DB
+ * @param {String} topic 
+ * @param {Number} value 
+ * @param {function} next 
+ */
 function updateTopicValue(topic, value, next) {
     User.update({
         'things.topic': topic
@@ -267,28 +326,6 @@ function updateTopicValue(topic, value, next) {
             next(null);
         }
     });
-}
-
-router.use(function (req, res) {
-    res.writeHead(res.locals.statusCode, {
-        'Content-Type': 'application/json'
-    });
-
-    const payload = {
-        success: res.locals.success,
-        message: res.locals.message
-    };
-    res.end(JSON.stringify(payload));
-});
-
-function sanitizeData(data) {
-    const sanitizeData = {};
-    for (let property of Object.keys(data)) {
-        if (data.hasOwnProperty(property)) {
-            sanitizeData[property] = sanitize(data[property]);
-        }
-    }
-    return sanitizeData;
 }
 
 module.exports = router;

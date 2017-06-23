@@ -4,6 +4,7 @@
 const client = require("./connector");
 
 module.exports = {
+
     publishMessageToIoT: function (topic, message, callback) {
         console.log("[Publisher] Publish data:", topic, message);
         const data = {
@@ -13,10 +14,10 @@ module.exports = {
         client.publish("thingModifyValue", JSON.stringify(data));
         callback(null);
     },
-    
-    publishMessage:function(topic,message,callback){
-        console.log("Send message to device",topic,message);
-        client.publish(topic,message);
+
+    publishMessage: function (topic, message, callback) {
+        console.log("Send message to device", topic, message);
+        client.publish(topic, message);
         callback(null);
     }
 };

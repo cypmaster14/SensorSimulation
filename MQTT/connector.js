@@ -23,6 +23,9 @@ client.on('connect', function () {
     });
 });
 
+/**
+ * This function is executed when a MQTT message is received
+ */
 client.on('message', function (topic, message) {
     message=message.toString();
     console.log("[RECEIVER] Message received:",topic,message);
