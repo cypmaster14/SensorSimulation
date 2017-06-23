@@ -2,7 +2,7 @@
     background: #dee1e5;
     margin-right: 20px;
     margin-bottom: 10px;
-    height: 280px;
+    height: 300px;
 }
 
 .thing > p {
@@ -38,3 +38,8 @@
     transition: transform .3s ease-in-out;
 }
 
+.removeThingButton{
+    font-size: 15px;
+    text-align:right;
+    margin-bottom: -20px;
+}

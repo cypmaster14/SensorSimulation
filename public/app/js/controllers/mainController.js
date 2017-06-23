@@ -30,85 +30,14 @@ function mainController($scope, indexServices) {
     $scope.showWarning = false;
     $scope.otherOptions = [];
     $scope.devices = [];
+    $scope.showSaveIcon = false;
 
-    // $scope.testDevices = [
-    //     {
-    //         col: 0,
-    //         row: 0,
-    //         sizeY: 2,
-    //         sizeX: 1,
-    //         topic: 'topic1',
-    //         name: 'name1',
-    //         outputType: 'Boolean',
-    //         thingType: ['Read', 'Write'],
-    //         value: true
-    //     },
-    //     {
-    //         col: 1,
-    //         row: 0,
-    //         sizeY: 1,
-    //         sizeX: 1,
-    //         topic: 'topic2',
-    //         name: 'name2',
-    //         outputType: 'Number',
-    //         min: 0,
-    //         max: 100,
-    //         thingType: ['Read'],
-    //         value: 40
-    //     },
-    //     {
-    //         col: 1,
-    //         row: 1,
-    //         sizeY: 1,
-    //         sizeX: 2,
-    //         topic: 'topic3',
-    //         name: 'name2',
-    //         outputType: 'String',
-    //         thingType: ['Read', 'Write'],
-    //         value: 'Open'
-    //     }
-    // ];
 
-    // $scope.gridsterOpts = {
-    //     minRows: 2, // the minimum height of the grid, in rows
-    //     maxRows: 100,
-    //     columns: 6, // the width of the grid, in columns
-    //     width: 'auto',
-    //     colWidth: 'auto', // can be an integer or 'auto'.  'auto' uses the pixel width of the element divided by 'columns'
-    //     rowHeight: 'match', // can be an integer or 'match'.  Match uses the colWidth, giving you square widgets.
-    //     margins: [20, 20], // the pixel distance between each widget
-    //     // defaultSizeX: 2, // the default width of a gridster item, if not specifed
-    //     // defaultSizeY: 2, // the default height of a gridster item, if not specified
-    //     mobileBreakPoint: 600, // if the screen is not wider that this, remove the grid layout and stack the items
-    //     resizable: {
-    //         enabled: true,
-    //         start: function (event, uiWidget, $element) {
-    //         }, // optional callback fired when resize is started,
-    //         resize: function (event, uiWidget, $element) {
-    //         }, // optional callback fired when item is resized,
-    //         stop: function (event, uiWidget, $element) {
-    //         } // optional callback fired when item is finished resizing
-    //     },
-    //     draggable: {
-    //         enabled: false, // whether dragging items is supported
-    //         start: function (event, uiWidget, $element) {
-    //         }, // optional callback fired when drag is started,
-    //         drag: function (event, uiWidget, $element) {
-    //         }, // optional callback fired when item is moved,
-    //         stop: function (event, uiWidget, $element) {
-    //         } // optional callback fired when item is finished dragging
-    //     }
-    // };
-
-    $scope.gridClicked = function (device) {
-        console.log(device.topic);
-    };
-
-    $scope.enterUsername = function (userName) {
+    $scope.enterUsername = function(userName) {
         if (userName !== undefined && userName !== "") {
             console.log(userName);
             $('#waitingModal').modal('open');
-            indexServices.getUsersThings(userName, function (err, things) {
+            indexServices.getUsersThings(userName, function(err, things) {
                 if (err) {
                     //Trebuie sa modific aici, sa pun un sweetAlert cu oops error
                     return;
@@ -126,30 +55,51 @@ function mainController($scope, indexServices) {
             });
 
 
-        } else {
+        }
+        else {
             $scope.showWarning = true;
         }
 
     };
 
-    $scope.showModalAddThing = function () {
+    $scope.editDashboard = function() {
+        $scope.showSaveIcon = !$scope.showSaveIcon;
+    };
+
+    $scope.removeThing = function(topic) {
+        console.log("Remove:", topic);
+        indexServices.removeThing($scope.userName,topic, function(err, response) {
+            if (err) {
+                console.log("Failed to remove thing");
+                Materialize.toast("Failed to remove thing", 3000, "rounded");
+                return;
+            }
+
+            $scope.devices = $scope.devices.filter(function(device) {
+                return device.topic !== topic;
+            });
+            Materialize.toast("Thing was removed", 3000, "rounded");
+        });
+    };
+
+    $scope.showModalAddThing = function() {
         const thingGeneratedIdLength = indexServices.getRandomInt(5, 10);
         $scope.topicThing = indexServices.generateRandomSequence(thingGeneratedIdLength) + "/";
         $('#modalThing').modal('open');
     };
 
-    $scope.addOtherOption = function () {
+    $scope.addOtherOption = function() {
         $scope.otherOptions.push({
             id: "option" + ($scope.otherOptions.length + 1),
             value: ""
         });
     };
 
-    $scope.removeOption = function () {
+    $scope.removeOption = function() {
         $scope.otherOptions.splice(-1, 1);
     };
 
-    $scope.submitNewValue = function (topic) {
+    $scope.submitNewValue = function(topic) {
         console.log(`I want to update the value with topic:${topic}`);
         const modifiedDevice = getDeviceByTopic(topic);
         console.log(modifiedDevice.value);
@@ -172,7 +122,7 @@ function mainController($scope, indexServices) {
         }
 
         console.log(`NewValue:${newValue}`);
-        updateValueOfThing(topic, newValue, modifiedDevice.outputType, function (err) {
+        updateValueOfThing(topic, newValue, modifiedDevice.outputType, function(err) {
             if (err) {
                 alert("Failed to update thing");
                 return;
@@ -183,14 +133,14 @@ function mainController($scope, indexServices) {
 
     };
 
-    $scope.sensorValueChanged = function (topic) {
+    $scope.sensorValueChanged = function(topic) {
         console.log(`I want to update the value with topic:${topic}`);
         const newValue = document.getElementById(topic).value;
         console.log("New newValue:", newValue);
         for (let device of $scope.devices) {
             if (device.topic === topic) {
                 console.log(`OldValue:${device.value} NewValue:${newValue}`);
-                updateValueOfThing(topic, newValue, device.outputType, function (err) {
+                updateValueOfThing(topic, newValue, device.outputType, function(err) {
                     if (err) {
                         alert("Failed to update thing");
                         return;
@@ -203,7 +153,7 @@ function mainController($scope, indexServices) {
         }
     };
 
-    $scope.addThing = function () {
+    $scope.addThing = function() {
         console.log($scope.typeOfThing);
         if ($scope.nameThing !== undefined && $scope.typeOfThing.length !== 0 && $scope.outputTypeThing !== null) {
             const newThing = {
@@ -242,7 +192,7 @@ function mainController($scope, indexServices) {
 
 
             console.log("New Thing", newThing);
-            indexServices.addThing(newThing, function (err, response) {
+            indexServices.addThing(newThing, function(err, response) {
                 $("#modalThing").modal('close');
                 if (err) {
                     console.log("Some error occurred");
@@ -280,7 +230,7 @@ function mainController($scope, indexServices) {
         };
         console.log(data);
 
-        indexServices.sensorValueModified(topic, data, function (err) {
+        indexServices.sensorValueModified(topic, data, function(err) {
             if (err) {
                 console.log(err);
                 console.log("Failed to update the value of a thing");
@@ -304,7 +254,7 @@ function mainController($scope, indexServices) {
 
 function initialize() {
 
-    angular.element(document).ready(function () {
+    angular.element(document).ready(function() {
         $('#modal1').modal({
             dismissible: false, // Modal cannot be dismissed by clicking outside of the modal
             opacity: .5, // Opacity of modal background
@@ -324,7 +274,7 @@ function initialize() {
             opacity: .5, // Opacity of modal background
             inDuration: 300, // Transition in duration
             outDuration: 200,
-            complete: function () {
+            complete: function() {
                 console.log("Inchid modal");
                 $("#typeOfThing").val("None");
                 $("#outputTypeThing").val("None");
@@ -333,7 +283,7 @@ function initialize() {
             }
         });
 
-        $('#modalThig').on('close', function () {
+        $('#modalThig').on('close', function() {
             console.log("Inchid");
         });
 

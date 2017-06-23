@@ -20,7 +20,8 @@
     "angular-materialize": "^0.2.2",
     "materialize": "^0.98.0",
     "angular-gridster": "^0.13.15",
-    "firebase": "^3.8.0"
+    "firebase": "^3.8.0",
+    "font-awesome": "^4.7.0"
   },
   "resolutions": {
     "materialize": "^0.98.0"
