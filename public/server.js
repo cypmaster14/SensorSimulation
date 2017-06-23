@@ -4,8 +4,9 @@ const morgan = require('morgan');
 const path = require('path');
 const app = express();
 const things = require("../Routes/things");
-const topicHandler = require("../MQTT/publisher");
+const cors= require("cors");
 
+app.use(cors());
 app.use(morgan('dev'));
 app.use("/bower_components", express.static(path.resolve("./public/bower_components")));
 app.use(express.static(path.resolve("./public/app")));
