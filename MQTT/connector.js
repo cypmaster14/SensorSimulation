@@ -7,6 +7,9 @@ const TOPIC_THING_MODIFY_VALUE = "thingModifyValue";
 
 
 const client = awsIOT.device(credentials);
+/**
+ * Function that is called when the connection to AWS IoT is establish successfully
+ */
 client.on('connect', function() {
     console.log("Connected to AWS IOT");
     client.subscribe(TOPIC_THING_MODIFY_VALUE);
@@ -17,7 +20,7 @@ client.on('connect', function() {
         '_id': 0
     }, function(err, res) {
         if (err) {
-            console.log("[FAILED] Failed to retrive the list of MQTT topict to connect to");
+            console.log("[FAILED] Failed to retrieve the list of MQTT topics to connect to");
             return;
         }
         for (let document of res) {
@@ -32,6 +35,9 @@ client.on('connect', function() {
     });
 });
 
+/**
+ * Function that is called when a MQTT message arrives for a subscribed token
+ */
 client.on('message', receiver);
 
 module.exports = client;

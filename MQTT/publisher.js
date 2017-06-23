@@ -3,7 +3,7 @@
  */
 const client = require("./connector");
 const TOPIC_THING_MODIFY_VALUE = "thingModifyValue";
-
+ 
 module.exports = {
     publishMessageToGateway: function(topic, message, callback) {
         console.log("[Publisher] Publish data:", topic, message);
@@ -11,8 +11,6 @@ module.exports = {
             topic: topic,
             message: message
         };
-        // client.publish("thingModifyValue", JSON.stringify(data));
-        // callback(null);
         client.publish(TOPIC_THING_MODIFY_VALUE, JSON.stringify(data));
         callback(null);
     },

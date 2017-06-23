@@ -126,8 +126,7 @@ function mainController($scope, indexServices) {
             });
 
 
-        }
-        else {
+        } else {
             $scope.showWarning = true;
         }
 
@@ -248,7 +247,7 @@ function mainController($scope, indexServices) {
                 if (err) {
                     console.log("Some error occurred");
                     console.log(err);
-                    if(err.status === 400 || err.status===409){
+                    if (err.status === 400 || err.status === 409) {
                         Materialize.toast(err.data.message, 3000, 'rounded');
                     }
                     return;
@@ -276,13 +275,12 @@ function mainController($scope, indexServices) {
 
     function updateValueOfThing(topic, newValue, outputType, next) {
         const data = {
-            topic: topic,
             message: newValue,
             outputType: outputType
         };
         console.log(data);
 
-        indexServices.sensorValueModified(data, function (err) {
+        indexServices.sensorValueModified(topic, data, function (err) {
             if (err) {
                 console.log(err);
                 console.log("Failed to update the value of a thing");

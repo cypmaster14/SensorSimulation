@@ -97,7 +97,7 @@ router.use(function(req, res, next) {
 });
 
 /**
- *  POST /things
+ * POST /things
  * Function that is used to add a thing to the system
  */
 router.post('/', function (req, res, next) {
@@ -189,12 +189,19 @@ router.post('/', function (req, res, next) {
  *  PUT /things
  *  Function that is used to update the value of a thing(topic)
  */
-router.put("/", function (req, res, next) {
-    const topic = req.body.topic;
+router.put("/:topic", function (req, res, next) {
+    const topic = req.params.topic;
     const value = String(req.body.message);
     res.locals.success = false;
     res.locals.statusCode = 500;
     console.log(topic, value);
+    if(!topic || !value){
+        res.locals.statusCode=400;
+        res.locals.success=false;
+        res.locals.message="Topic or value field wasn't provided";
+        next();
+        return;
+    }
 
     if (req.body.publishData !== undefined) {
         console.log("Doar actualizez datele");
@@ -239,7 +246,8 @@ router.put("/", function (req, res, next) {
 });
 
 /**
- * Function that is used to 
+ * Function that is used to intermediate the communication between platform and devices
+ * Published the message using MQTT
  */
 router.patch("/", function (req, res, next) {
     console.log("[Things Patch]", req.body);
@@ -286,7 +294,7 @@ function sanitizeData(data) {
 
 /**
  * Function that validates the information regarding a new thing
- * @param {Object} newThing 
+ * @param {JSON} newThing 
  */
 function validateNewThingInput(newThing){
     if(outputTypeSupported.indexOf(newThing.outputType)==-1){

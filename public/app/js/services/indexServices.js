@@ -40,10 +40,12 @@ function indexServices($http, $httpParamSerializer) {
 
     this.getUsersThings = function (email, next) {
 
-        const queryString = $httpParamSerializer({'email': email});
+        const queryString = $httpParamSerializer({
+            'email': email
+        });
         $http.get(URL_THINGS + "?" + queryString, CONFIG)
             .then(function (response) {
-                console.log("Success.I got the users's things");
+                console.log("Success.I got the things of the user");
                 next(null, response.data.message.things);
             }, function (response) {
                 console.log("Failed", response);
@@ -51,14 +53,15 @@ function indexServices($http, $httpParamSerializer) {
             });
     };
 
-    this.sensorValueModified = function (data, next) {
-        $http.put(URL_THINGS, data, CONFIG)
+    this.sensorValueModified = function (topic, data, next) {
+        const URL_UPDATE_VALUE = `${URL_THINGS}/${encodeURIComponent(topic)}`;
+        $http.put(URL_UPDATE_VALUE, data, CONFIG)
             .then(function (response) {
                 console.log("Success");
                 next(null);
             }, function (response) {
                 next(response);
-            })
-    }
+            });
+    };
 
 }

@@ -2,6 +2,13 @@ const request = require('request-promise');
 const User = require("../Models/User");
 const URL_THINGS = "https://opid-server-cypmaster14.c9users.io/api/SS/things";
 
+
+/**
+ * Function that sends the newly arrived MQTT message to OPID
+ * @param {String} topic 
+ * @param {String} message 
+ * @param {function(err)} callback 
+ */
 function forwardMessageToOPID(topic, message, callback) {
     console.log("A thing modified value");
     console.log(`Topic:${topic}\nMessage:${message}`);
@@ -23,6 +30,12 @@ function forwardMessageToOPID(topic, message, callback) {
         });
 }
 
+/**
+ * Function that updates the value of the topic
+ * @param {String} topic 
+ * @param {String} value 
+ * @param {function(err)} next 
+ */
 function updateTopicValue(topic, value, next) {
     User.update({
         'things.topic': topic
