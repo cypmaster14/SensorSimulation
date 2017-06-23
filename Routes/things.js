@@ -14,7 +14,7 @@ const async = require("async");
  * GET /things
  * Function that retrieves all the things that are registered at a specific email
  */
-router.get("/", function (req, res, next) {
+router.get("/", function(req, res, next) {
     res.locals.success = false;
     res.locals.statusCode = 500;
     const email = req.query.email;
@@ -28,7 +28,7 @@ router.get("/", function (req, res, next) {
     User.findById(email, {
         things: 1,
         _id: 0
-    }, function (err, document) {
+    }, function(err, document) {
         if (err) {
             res.locals.message = "Failed to retrieve user's things";
             console.log(err);
@@ -43,7 +43,7 @@ router.get("/", function (req, res, next) {
     });
 });
 
-router.use(function (req, res, next) {
+router.use(function(req, res, next) {
     if (req.method !== "GET") {
         next();
         return;
@@ -73,7 +73,7 @@ router.use(function (req, res, next) {
                 topic: topic
             }
         }
-    }, function (err, document) {
+    }, function(err, document) {
         if (err) {
             console.log(err);
             console.log(`Failed to extract the info about topic:${topic} from DB`);
@@ -100,7 +100,7 @@ router.use(function (req, res, next) {
  * POST /things
  * Function that is used to add a thing to the system
  */
-router.post('/', function (req, res, next) {
+router.post('/', function(req, res, next) {
     const newThing = sanitizeData(req.body);
     const email = newThing.userName;
     delete newThing.userName;
@@ -118,7 +118,7 @@ router.post('/', function (req, res, next) {
     console.log("New thing", newThing);
 
     async.series([
-        function (taskCallback) {
+        function(taskCallback) {
             //Check if the new thing's topic is already used
             User.find({
                 "things.topic": newThing.topic
@@ -129,7 +129,7 @@ router.post('/', function (req, res, next) {
                         topic: newThing.topic
                     }
                 }
-            }, function (err, documents) {
+            }, function(err, documents) {
                 if (err) {
                     console.log("Failed to check if already exists thing with topic:", newThing.topic);
                     res.locals.message = "Some error occured";
@@ -140,7 +140,8 @@ router.post('/', function (req, res, next) {
                 if (documents.length === 0) {
                     //Topic-ul nu este folosit
                     taskCallback(null);
-                } else {
+                }
+                else {
                     console.log("Topic-ul este deja folosit");
                     res.locals.statusCode = 409;
                     res.locals.message = "Topic is already used";
@@ -148,7 +149,7 @@ router.post('/', function (req, res, next) {
                 }
             });
         },
-        function (taskCallback) {
+        function(taskCallback) {
             //Add the new thing to the user's list of things
             User.findByIdAndUpdate(email, {
                     $push: {
@@ -158,7 +159,7 @@ router.post('/', function (req, res, next) {
                     safe: true,
                     upsert: true
                 },
-                function (err, document) {
+                function(err, document) {
                     if (err) {
                         console.log(err);
                         res.locals.message = "Failed to add the thing to the user's list of things";
@@ -168,7 +169,7 @@ router.post('/', function (req, res, next) {
                     taskCallback(null);
                 });
         }
-    ], function (err, results) {
+    ], function(err, results) {
         if (err) {
             console.log(err);
             next();
@@ -188,7 +189,7 @@ router.post('/', function (req, res, next) {
  *  PUT /things
  *  Function that is used to update the value of a thing(topic)
  */
-router.put("/:topic", function (req, res, next) {
+router.put("/:topic", function(req, res, next) {
     const topic = req.params.topic;
     const value = String(req.body.message);
     res.locals.success = false;
@@ -204,7 +205,7 @@ router.put("/:topic", function (req, res, next) {
 
     if (req.body.publishData !== undefined) {
         console.log("Doar actualizez datele");
-        updateTopicValue(topic, value, function (err) {
+        updateTopicValue(topic, value, function(err) {
             if (err) {
                 console.log(err);
                 res.locals.message = "Failed to update the value from DB";
@@ -216,9 +217,10 @@ router.put("/:topic", function (req, res, next) {
             res.locals.success = true;
             next();
         });
-    } else {
+    }
+    else {
         console.log("Actualizez datele si push notification");
-        publisher.publishMessageToGateway(topic, value, function (err) {
+        publisher.publishMessageToGateway(topic, value, function(err) {
             if (err) {
                 console.log(err);
                 res.locals.message = "Failed to publish the data";
@@ -234,17 +236,44 @@ router.put("/:topic", function (req, res, next) {
     }
 });
 
+
+router.delete("/:topic", function(req, res, next) {
+    const topic = req.params.topic;
+    const email = req.query.email;
+    res.locals.statusCode = 500;
+    res.locals.success = false;
+    if (!topic || !email) {
+        res.locals.statusCode = 400;
+        res.locals.message = "Topic or email wasn't provide";
+        next();
+        return;
+    }
+    console.log(`Remove topic:${topic} for user:${email}`);
+    removeTopic(email, topic)
+        .then(function() {
+            console.log("Thing was removed successfully");
+            res.locals.statusCode = 200;
+            res.locals.success = true;
+            res.locals.message = "Thing was removed successfully";
+            next();
+        })
+        .catch(function(err) {
+            res.locals.message = "Some error occured";
+            next();
+        });
+});
+
 /**
  * Function that is used to intermediate the communication between platform and devices
  * Published the message using MQTT
  */
-router.patch("/", function (req, res, next) {
+router.patch("/", function(req, res, next) {
     console.log("[Things Patch]", req.body);
     const topic = req.body.topic;
     const newValue = req.body.value;
     res.locals.statusCode = 500;
     res.locals.success = false;
-    updateTopicValue(topic, newValue, function (err) {
+    updateTopicValue(topic, newValue, function(err) {
         if (err) {
             console.log(err);
             console.log("Failed to update the value of device");
@@ -265,7 +294,7 @@ router.patch("/", function (req, res, next) {
 /**
  * Function that is used to send the response to client
  */
-router.use(function (req, res) {
+router.use(function(req, res) {
     res.writeHead(res.locals.statusCode, {
         'Content-Type': 'application/json'
     });
@@ -290,7 +319,6 @@ function sanitizeData(data) {
     }
     return sanitizeData;
 }
-
 
 /**
  * Function that validates the information regarding a new thing
@@ -333,12 +361,38 @@ function updateTopicValue(topic, value, next) {
         }
     }, {
         multi: true
-    }, function (err, document) {
+    }, function(err, document) {
         if (err) {
             next(err);
-        } else {
+        }
+        else {
             next(null);
         }
+    });
+}
+
+/**
+ * Function that is used to remove a thing.It's using thing's topic.
+ * @param {string} email
+ * @param {string} topic 
+ */
+function removeTopic(email, topic) {
+    return new Promise(function(resolve, reject) {
+        User.findByIdAndUpdate(email, {
+            $pull: {
+                things: {
+                    topic: topic
+                }
+            }
+        }, function(err, result) {
+            if (err) {
+                console.log(err);
+                console.log("Failed to remove thing");
+                reject(err);
+                return;
+            }
+            resolve();
+        });
     });
 }
 
