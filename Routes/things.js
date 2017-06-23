@@ -28,7 +28,7 @@ router.get("/", function (req, res, next) {
     User.findById(email, {
         things: 1,
         _id: 0
-    }, function(err, document) {
+    }, function (err, document) {
         if (err) {
             res.locals.message = "Failed to retrieve user's things";
             console.log(err);
@@ -43,7 +43,7 @@ router.get("/", function (req, res, next) {
     });
 });
 
-router.use(function(req, res, next) {
+router.use(function (req, res, next) {
     if (req.method !== "GET") {
         next();
         return;
@@ -73,7 +73,7 @@ router.use(function(req, res, next) {
                 topic: topic
             }
         }
-    }, function(err, document) {
+    }, function (err, document) {
         if (err) {
             console.log(err);
             console.log(`Failed to extract the info about topic:${topic} from DB`);
@@ -129,7 +129,7 @@ router.post('/', function (req, res, next) {
                         topic: newThing.topic
                     }
                 }
-            }, function(err, documents) {
+            }, function (err, documents) {
                 if (err) {
                     console.log("Failed to check if already exists thing with topic:", newThing.topic);
                     res.locals.message = "Some error occured";
@@ -140,8 +140,7 @@ router.post('/', function (req, res, next) {
                 if (documents.length === 0) {
                     //Topic-ul nu este folosit
                     taskCallback(null);
-                }
-                else {
+                } else {
                     console.log("Topic-ul este deja folosit");
                     res.locals.statusCode = 409;
                     res.locals.message = "Topic is already used";
@@ -159,7 +158,7 @@ router.post('/', function (req, res, next) {
                     safe: true,
                     upsert: true
                 },
-                function(err, document) {
+                function (err, document) {
                     if (err) {
                         console.log(err);
                         res.locals.message = "Failed to add the thing to the user's list of things";
@@ -169,7 +168,7 @@ router.post('/', function (req, res, next) {
                     taskCallback(null);
                 });
         }
-    ], function(err, results) {
+    ], function (err, results) {
         if (err) {
             console.log(err);
             next();
@@ -195,17 +194,17 @@ router.put("/:topic", function (req, res, next) {
     res.locals.success = false;
     res.locals.statusCode = 500;
     console.log(topic, value);
-    if(!topic || !value){
-        res.locals.statusCode=400;
-        res.locals.success=false;
-        res.locals.message="Topic or value field wasn't provided";
+    if (!topic || !value) {
+        res.locals.statusCode = 400;
+        res.locals.success = false;
+        res.locals.message = "Topic or value field wasn't provided";
         next();
         return;
     }
 
     if (req.body.publishData !== undefined) {
         console.log("Doar actualizez datele");
-        updateTopicValue(topic, value, function(err) {
+        updateTopicValue(topic, value, function (err) {
             if (err) {
                 console.log(err);
                 res.locals.message = "Failed to update the value from DB";
@@ -217,10 +216,9 @@ router.put("/:topic", function (req, res, next) {
             res.locals.success = true;
             next();
         });
-    }
-    else {
+    } else {
         console.log("Actualizez datele si push notification");
-        publisher.publishMessageToGateway(topic, value, function(err) {
+        publisher.publishMessageToGateway(topic, value, function (err) {
             if (err) {
                 console.log(err);
                 res.locals.message = "Failed to publish the data";
@@ -228,19 +226,10 @@ router.put("/:topic", function (req, res, next) {
                 return;
             }
             console.log("Data was published");
-
-            updateTopicValue(topic, value, function(err) {
-                if (err) {
-                    console.log(err);
-                    res.locals.message = "Failed to update the value from DB";
-                    next();
-                    return;
-                }
-                res.locals.statusCode = 200;
-                res.locals.message = "Data was published successfully";
-                res.locals.success = true;
-                next();
-            });
+            res.locals.statusCode = 200;
+            res.locals.message = "Data was published successfully";
+            res.locals.success = true;
+            next();
         });
     }
 });
@@ -253,11 +242,22 @@ router.patch("/", function (req, res, next) {
     console.log("[Things Patch]", req.body);
     const topic = req.body.topic;
     const newValue = req.body.value;
-    publisher.publishMessageToDevice(topic, newValue, err => {
-        res.locals.statusCode = 200;
-        res.locals.success = true;
-        res.locals.message = "Message was sent to device";
-        next();
+    res.locals.statusCode = 500;
+    res.locals.success = false;
+    updateTopicValue(topic, newValue, function (err) {
+        if (err) {
+            console.log(err);
+            console.log("Failed to update the value of device");
+            res.locals.message = "Some error occurred";
+            next();
+            return;
+        }
+        publisher.publishMessageToDevice(topic, newValue, err => {
+            res.locals.statusCode = 200;
+            res.locals.success = true;
+            res.locals.message = "Message was sent to device";
+            next();
+        });
     });
 });
 
@@ -296,32 +296,33 @@ function sanitizeData(data) {
  * Function that validates the information regarding a new thing
  * @param {JSON} newThing 
  */
-function validateNewThingInput(newThing){
-    if(outputTypeSupported.indexOf(newThing.outputType)==-1){
+function validateNewThingInput(newThing) {
+    if (outputTypeSupported.indexOf(newThing.outputType) == -1) {
         return {
-            isValid:false,
-            message:"Output type not supported"
+            isValid: false,
+            message: "Output type not supported"
         };
     }
-    if(newThing.outputType==='Number' || newThing.outputType==='Percentage'){
-        if(!(newThing.minimumValue<=newThing.value && newThing.value<=newThing.maximamValue)){
+    if (newThing.outputType === 'Number' || newThing.outputType === 'Percentage') {
+        if (!(newThing.minimumValue <= newThing.value && newThing.value <= newThing.maximamValue)) {
             return {
-                isValid:false,
-                message:"The values of the thing are not good"
+                isValid: false,
+                message: "The values of the thing are not good"
             };
         }
     }
     return {
-        isValid:true
+        isValid: true
     };
 }
+
 
 /**
  * Function that is used to update the value of a thing
  * I update the thing's value from DB
  * @param {String} topic 
  * @param {Number} value 
- * @param {function} next 
+ * @param {function(err)} next 
  */
 function updateTopicValue(topic, value, next) {
     User.update({

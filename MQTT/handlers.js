@@ -45,35 +45,35 @@ function updateTopicValue(topic, value, next) {
         }
     }, {
         multi: true
-    }, function(err, document) {
+    }, function (err, document) {
         if (err) {
             next(err);
-        }
-        else {
+        } else {
             next(null);
         }
     });
 }
 
 module.exports = {
-    handleUserModifyValue: function(topic, message) {
-        console.log("[RECEIVER] Message received:", topic, message);
-        updateTopicValue(topic, message, function(err) {
+    handleUserModifyValue: function (topic, message) {
+        console.log("[Device RECEIVER] Message received:", topic, message);
+
+    },
+    handleThingModifyValue: function (topic, message) {
+        updateTopicValue(topic, message, function (err) {
             if (err) {
                 console.log("Failed to update the value of topic");
                 console.log(err);
                 return;
             }
             console.log("Thing was updated");
-        });
 
-    },
-    handleThingModifyValue: function(topic, message) {
-        forwardMessageToOPID(topic, message, function(err, result) {
-            if (err) {
-                console.log("Failed to forward the message to OPID");
-                console.log(err);
-            }
+            forwardMessageToOPID(topic, message, function (err, result) {
+                if (err) {
+                    console.log("Failed to forward the message to OPID");
+                    console.log(err);
+                }
+            });
         });
     }
 };
