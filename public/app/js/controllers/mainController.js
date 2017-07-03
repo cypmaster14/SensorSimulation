@@ -68,7 +68,7 @@ function mainController($scope, indexServices) {
 
     $scope.removeThing = function(topic) {
         console.log("Remove:", topic);
-        indexServices.removeThing($scope.userName,topic, function(err, response) {
+        indexServices.removeThing($scope.userName, topic, function(err, response) {
             if (err) {
                 console.log("Failed to remove thing");
                 Materialize.toast("Failed to remove thing", 3000, "rounded");
@@ -124,11 +124,11 @@ function mainController($scope, indexServices) {
         console.log(`NewValue:${newValue}`);
         updateValueOfThing(topic, newValue, modifiedDevice.outputType, function(err) {
             if (err) {
-                alert("Failed to update thing");
+                Materialize.toast("Failed to update thing",3000,"rounded");
                 return;
             }
             modifiedDevice.value = newValue;
-            alert("Value was modified");
+            Materialize.toast("Value was modified",3000,"rounded");
         });
 
     };
@@ -250,46 +250,47 @@ function mainController($scope, indexServices) {
         }
     }
 
-}
+    function initialize() {
 
-function initialize() {
+        angular.element(document).ready(function() {
+            $('#modal1').modal({
+                dismissible: false, // Modal cannot be dismissed by clicking outside of the modal
+                opacity: .5, // Opacity of modal background
+                inDuration: 300, // Transition in duration
+                outDuration: 200
+            });
 
-    angular.element(document).ready(function() {
-        $('#modal1').modal({
-            dismissible: false, // Modal cannot be dismissed by clicking outside of the modal
-            opacity: .5, // Opacity of modal background
-            inDuration: 300, // Transition in duration
-            outDuration: 200
+            $('#waitingModal').modal({
+                dismissible: false, // Modal cannot be dismissed by clicking outside of the modal
+                opacity: .5, // Opacity of modal background
+                inDuration: 300, // Transition in duration
+                outDuration: 200
+            });
+
+            $('#modalThing').modal({
+                dismissible: true, // Modal cannot be dismissed by clicking outside of the modal
+                opacity: .5, // Opacity of modal background
+                inDuration: 300, // Transition in duration
+                outDuration: 200,
+                complete: function() {
+                    console.log("Inchid modal");
+                    $("#typeOfThing").val("None");
+                    $("#outputTypeThing").val("None");
+                    $("select").material_select();
+                    $(this).find('form').trigger('reset');
+                    $scope.outputTypeThing = undefined;
+                }
+            });
+
+            $('#modalThig').on('close', function() {
+                console.log("Inchid");
+            });
+
+            $('#modal1').modal('open');
+            console.log("On ready");
+            $("select").material_select();
         });
 
-        $('#waitingModal').modal({
-            dismissible: false, // Modal cannot be dismissed by clicking outside of the modal
-            opacity: .5, // Opacity of modal background
-            inDuration: 300, // Transition in duration
-            outDuration: 200
-        });
-
-        $('#modalThing').modal({
-            dismissible: true, // Modal cannot be dismissed by clicking outside of the modal
-            opacity: .5, // Opacity of modal background
-            inDuration: 300, // Transition in duration
-            outDuration: 200,
-            complete: function() {
-                console.log("Inchid modal");
-                $("#typeOfThing").val("None");
-                $("#outputTypeThing").val("None");
-                $("select").material_select();
-                $(this).find('form').trigger('reset');
-            }
-        });
-
-        $('#modalThig').on('close', function() {
-            console.log("Inchid");
-        });
-
-        $('#modal1').modal('open');
-        console.log("On ready");
-        $("select").material_select();
-    });
+    }
 
 }
